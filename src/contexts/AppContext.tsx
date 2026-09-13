@@ -9,8 +9,7 @@ import React, {
   useState,
 } from "react";
 import { AppState, Route, Session } from "@/utils/types";
-import { clearSession, getSession, setSession } from "@/services/storageService";
-import { DEMO_USERS } from "@/config/constants";
+import { supabase } from "@/lib/supabase";
 
 // ─── Context Types ────────────────────────────────────────────────────────────
 
@@ -21,8 +20,8 @@ interface AppContextValue {
   toastVisible: boolean;
   toastError: boolean;
   go: (route: Route, extras?: Partial<AppState>) => void;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   showToast: (message: string, error?: boolean) => void;
   setFilters: (filters: AppState["filters"]) => void;
   setDesignerEffluent: (val: string) => void;
@@ -37,7 +36,6 @@ const AppContext = createContext<AppContextValue | null>(null);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  // Always start with login/null so server and client HTML match
   const [state, setState] = useState<AppState>({
     route: "login",
     editingId: null,
@@ -53,14 +51,58 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [toastError, setToastError] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Hydrate session from sessionStorage after mount (avoids SSR mismatch)
+  // Hydrate session from Supabase on mount and subscribe to auth changes
   useEffect(() => {
-    const stored = getSession();
-    if (stored) {
-      setSessionState(stored);
-      setState((prev) => ({ ...prev, route: "main" }));
+    async function loadSession() {
+      const {
+        data: { session: supaSession },
+      } = await supabase.auth.getSession();
+
+      if (supaSession?.user) {
+        await applySupaSession(supaSession.user.id);
+      }
     }
+
+    loadSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, supaSession) => {
+      if (supaSession?.user) {
+        await applySupaSession(supaSession.user.id);
+      } else {
+        setSessionState(null);
+        setState({
+          route: "login",
+          editingId: null,
+          filters: {},
+          designerEffluent: "",
+          designerProject: "",
+        });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function applySupaSession(userId: string) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, display, role")
+      .eq("id", userId)
+      .single();
+
+    if (profile) {
+      const sess: Session = {
+        username: profile.username,
+        role: profile.role as Session["role"],
+        display: profile.display,
+      };
+      setSessionState(sess);
+      setState((prev) => ({ ...prev, route: prev.route === "login" ? "main" : prev.route }));
+    }
+  }
 
   const showToast = useCallback((message: string, error = false) => {
     setToastMessage(message);
@@ -74,30 +116,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, route, ...extras }));
   }, []);
 
-  const login = useCallback((username: string, password: string): boolean => {
-    const user = DEMO_USERS[username.toLowerCase()];
-    if (!user || user.password !== password) return false;
-    const sess: Session = {
-      username: username.toLowerCase(),
-      role: user.role,
-      display: user.display,
-    };
-    setSession(sess);
-    setSessionState(sess);
-    setState((prev) => ({ ...prev, route: "main" }));
-    return true;
-  }, []);
+  const login = useCallback(
+    async (username: string, password: string): Promise<boolean> => {
+      // Look up the email address for this username from the profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("username", username.toLowerCase().trim())
+        .single();
 
-  const logout = useCallback(() => {
-    clearSession();
-    setSessionState(null);
-    setState({
-      route: "login",
-      editingId: null,
-      filters: {},
-      designerEffluent: "",
-      designerProject: "",
-    });
+      if (profileError || !profile?.email) return false;
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: profile.email,
+        password,
+      });
+      if (error) return false;
+      return true;
+    },
+    []
+  );
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
   }, []);
 
   const setFilters = useCallback((filters: AppState["filters"]) => {

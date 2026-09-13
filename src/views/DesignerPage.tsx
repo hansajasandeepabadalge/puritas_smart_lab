@@ -1,15 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { EFFLUENT_TYPES } from "@/config/constants";
-import { getRecords } from "@/services/storageService";
+import { fetchRecords } from "@/services/dbService";
 import RecordsTable from "@/components/RecordsTable";
+import { LabRecord } from "@/utils/types";
 
 export default function DesignerPage() {
   const { state, go, setDesignerEffluent, setDesignerProject, resetDesignerFilters } =
     useApp();
 
-  const allRecords = getRecords();
+  const [allRecords, setAllRecords] = useState<LabRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all records once; filtering is done client-side for instant responsiveness
+  useEffect(() => {
+    setLoading(true);
+    fetchRecords()
+      .then(setAllRecords)
+      .catch(() => setAllRecords([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const projects = [
     ...new Set(
@@ -50,19 +62,19 @@ export default function DesignerPage() {
       {/* ── Stats Row ── */}
       <div className="stat-row">
         <div className="card stat-card">
-          <div className="value">{visible.length}</div>
+          <div className="value">{loading ? "—" : visible.length}</div>
           <div className="label">Visible Records</div>
         </div>
         <div className="card stat-card">
-          <div className="value">{projects.length}</div>
+          <div className="value">{loading ? "—" : projects.length}</div>
           <div className="label">Available Projects</div>
         </div>
         <div className="card stat-card">
-          <div className="value">{avgCod}</div>
+          <div className="value">{loading ? "—" : avgCod}</div>
           <div className="label">Average COD</div>
         </div>
         <div className="card stat-card">
-          <div className="value">{avgBod}</div>
+          <div className="value">{loading ? "—" : avgBod}</div>
           <div className="label">Average BOD</div>
         </div>
       </div>
@@ -123,9 +135,13 @@ export default function DesignerPage() {
       <section className="card section-card">
         <div className="section-title">
           <h2>Historical Laboratory Records</h2>
-          <span>{visible.length} record(s)</span>
+          <span>{loading ? "Loading…" : `${visible.length} record(s)`}</span>
         </div>
-        <RecordsTable records={visible} editable={false} />
+        {loading ? (
+          <div className="empty-state">Loading records…</div>
+        ) : (
+          <RecordsTable records={visible} editable={false} />
+        )}
       </section>
     </main>
   );

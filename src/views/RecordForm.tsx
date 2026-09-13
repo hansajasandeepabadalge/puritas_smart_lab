@@ -1,38 +1,27 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { EFFLUENT_TYPES } from "@/config/constants";
 import {
   generateRefNo,
-  getRecords,
-  saveRecords,
-} from "@/services/storageService";
+  insertRecord,
+  refNoExists,
+  updateRecord,
+} from "@/services/dbService";
 import { LabRecord } from "@/utils/types";
 
 interface Props {
   record?: LabRecord | null;
   isEdit?: boolean;
+  onSaved?: () => void;
 }
 
-export default function RecordForm({ record = null, isEdit = false }: Props) {
+export default function RecordForm({ record = null, isEdit = false, onSaved }: Props) {
   const { session, go, showToast } = useApp();
+  const [saving, setSaving] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
-  const defaults = {
-    refNo: record?.refNo ?? generateRefNo(),
-    date: record?.date ?? today,
-    responsiblePerson: record?.responsiblePerson ?? session?.username ?? "",
-    effluentType: record?.effluentType ?? "",
-    projectName: record?.projectName ?? "",
-    samplePoint: record?.samplePoint ?? "",
-    cod: record?.cod ?? "",
-    bod: record?.bod ?? "",
-    tss: record?.tss ?? "",
-    tds: record?.tds ?? "",
-    ph: record?.ph ?? "",
-    ogt: record?.ogt ?? "",
-  };
 
   function collectFormData(form: HTMLFormElement) {
     const get = (name: string) =>
@@ -53,56 +42,50 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
     };
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = collectFormData(form);
-    const records = getRecords();
+    setSaving(true);
 
-    if (isEdit && record) {
-      // ── Update existing ──
-      if (
-        records.some(
-          (r) =>
-            r.id !== record.id &&
-            r.refNo.toLowerCase() === data.refNo.toLowerCase()
-        )
-      ) {
-        showToast("Reference number already exists.", true);
-        return;
+    try {
+      if (isEdit && record) {
+        // ── Update existing ──
+        const duplicate = await refNoExists(data.refNo, record.id);
+        if (duplicate) {
+          showToast("Reference number already exists.", true);
+          return;
+        }
+        await updateRecord(record.id, {
+          ...data,
+          effluentType: data.effluentType as LabRecord["effluentType"],
+        });
+        showToast("Laboratory data updated successfully.");
+        setTimeout(() => {
+          onSaved?.();
+          go("edit-list");
+        }, 500);
+      } else {
+        // ── Insert new ──
+        const duplicate = await refNoExists(data.refNo);
+        if (duplicate) {
+          showToast("Reference number already exists.", true);
+          return;
+        }
+        await insertRecord({
+          ...data,
+          effluentType: data.effluentType as LabRecord["effluentType"],
+        });
+        showToast("Laboratory data saved successfully.");
+        setTimeout(() => {
+          onSaved?.();
+          go("edit-list");
+        }, 500);
       }
-      const idx = records.findIndex((r) => r.id === record.id);
-      if (idx < 0) {
-        showToast("Record not found.", true);
-        return;
-      }
-      records[idx] = {
-        ...records[idx],
-        ...data,
-        updatedAt: new Date().toISOString(),
-      };
-      saveRecords(records);
-      showToast("Laboratory data updated successfully.");
-      setTimeout(() => go("edit-list"), 500);
-    } else {
-      // ── Insert new ──
-      if (
-        records.some((r) => r.refNo.toLowerCase() === data.refNo.toLowerCase())
-      ) {
-        showToast("Reference number already exists.", true);
-        return;
-      }
-      const now = new Date().toISOString();
-      records.unshift({
-        id: crypto.randomUUID(),
-        ...data,
-        effluentType: data.effluentType as LabRecord["effluentType"],
-        createdAt: now,
-        updatedAt: now,
-      });
-      saveRecords(records);
-      showToast("Laboratory data saved successfully.");
-      setTimeout(() => go("edit-list"), 500);
+    } catch {
+      showToast("An error occurred. Please try again.", true);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -133,12 +116,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="refNo" className="required">Ref No.</label>
-              <input
-                id="refNo"
-                name="refNo"
-                required
-                defaultValue={defaults.refNo}
-              />
+              <RefNoInput defaultValue={record?.refNo} isEdit={isEdit} />
             </div>
             <div className="form-group">
               <label htmlFor="date" className="required">Date</label>
@@ -147,7 +125,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                 name="date"
                 type="date"
                 required
-                defaultValue={defaults.date}
+                defaultValue={record?.date ?? today}
               />
             </div>
             <div className="form-group">
@@ -158,7 +136,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                 id="responsiblePerson"
                 name="responsiblePerson"
                 required
-                defaultValue={defaults.responsiblePerson}
+                defaultValue={record?.responsiblePerson ?? session?.username ?? ""}
                 readOnly
               />
               <span className="helper">
@@ -173,7 +151,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                 id="effluentType"
                 name="effluentType"
                 required
-                defaultValue={defaults.effluentType}
+                defaultValue={record?.effluentType ?? ""}
               >
                 <option value="">Select effluent type</option>
                 {EFFLUENT_TYPES.map((t) => (
@@ -191,7 +169,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                 id="projectName"
                 name="projectName"
                 required
-                defaultValue={defaults.projectName}
+                defaultValue={record?.projectName ?? ""}
                 placeholder="Enter project name"
               />
             </div>
@@ -203,7 +181,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                 id="samplePoint"
                 name="samplePoint"
                 required
-                defaultValue={defaults.samplePoint}
+                defaultValue={record?.samplePoint ?? ""}
                 placeholder="Enter collection point"
               />
             </div>
@@ -238,7 +216,7 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
                   step={step}
                   min="0"
                   required
-                  defaultValue={String(defaults[name])}
+                  defaultValue={record ? String(record[name]) : ""}
                   placeholder={`Enter ${label} value`}
                 />
               </div>
@@ -250,8 +228,9 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
               id="form-submit-btn"
               className="btn btn-primary"
               type="submit"
+              disabled={saving}
             >
-              {isEdit ? "Update Data" : "Save Data"}
+              {saving ? "Saving…" : isEdit ? "Update Data" : "Save Data"}
             </button>
             {!isEdit && (
               <button
@@ -274,5 +253,34 @@ export default function RecordForm({ record = null, isEdit = false }: Props) {
         </section>
       </form>
     </main>
+  );
+}
+
+// ── Auto-generates refNo for new records ──────────────────────────────────────
+
+function RefNoInput({
+  defaultValue,
+  isEdit,
+}: {
+  defaultValue?: string;
+  isEdit: boolean;
+}) {
+  const [value, setValue] = useState(defaultValue ?? "");
+  const [generated, setGenerated] = useState(false);
+
+  // Auto-generate on mount for new records
+  if (!isEdit && !generated && !defaultValue) {
+    setGenerated(true);
+    generateRefNo().then(setValue);
+  }
+
+  return (
+    <input
+      id="refNo"
+      name="refNo"
+      required
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
   );
 }

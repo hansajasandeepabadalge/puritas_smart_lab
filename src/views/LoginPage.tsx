@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useId } from "react";
+import { FormEvent, useId, useState } from "react";
 import Image from "next/image";
 import { useApp } from "@/contexts/AppContext";
 
@@ -8,13 +8,16 @@ export default function LoginPage() {
   const { login, showToast } = useApp();
   const usernameId = useId();
   const passwordId = useId();
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e: FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const username = (form.elements.namedItem("username") as HTMLInputElement).value.trim();
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
-    const ok = login(username, password);
+    setLoading(true);
+    const ok = await login(username, password);
+    setLoading(false);
     if (!ok) showToast("Invalid username or password.", true);
   }
 
@@ -48,7 +51,7 @@ export default function LoginPage() {
                 name="username"
                 autoComplete="username"
                 required
-                placeholder="Enter username"
+                placeholder="Enter your username"
               />
             </div>
             <div className="form-group">
@@ -61,21 +64,18 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                placeholder="Enter password"
+                placeholder="Enter your password"
               />
             </div>
-            <button id="login-submit-btn" className="btn btn-primary" type="submit">
-              Login
+            <button
+              id="login-submit-btn"
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Signing in…" : "Login"}
             </button>
           </form>
-
-          <div className="demo-box">
-            <strong>Demo accounts</strong>
-            <br />
-            Lab User: <b>lab</b> / <b>lab123</b>
-            <br />
-            Designer: <b>designer</b> / <b>design123</b>
-          </div>
         </div>
       </section>
 

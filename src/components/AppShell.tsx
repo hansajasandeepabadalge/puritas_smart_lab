@@ -1,15 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Topbar from "@/components/Topbar";
 import Toast from "@/components/Toast";
-import LoginPage from "@/pages/LoginPage";
-import MainPage from "@/pages/MainPage";
-import LabHomePage from "@/pages/LabHomePage";
-import RecordForm from "@/pages/RecordForm";
-import EditListPage from "@/pages/EditListPage";
-import DesignerPage from "@/pages/DesignerPage";
-import { getRecords } from "@/services/storageService";
+import LoginPage from "@/views/LoginPage";
+import MainPage from "@/views/MainPage";
+import LabHomePage from "@/views/LabHomePage";
+import RecordForm from "@/views/RecordForm";
+import EditListPage from "@/views/EditListPage";
+import DesignerPage from "@/views/DesignerPage";
+import { fetchRecordById } from "@/services/dbService";
+import { LabRecord } from "@/utils/types";
 
 function AppRouter() {
   const { state, session } = useApp();
@@ -66,17 +68,9 @@ function AppRouter() {
       content = <EditListPage />;
       break;
 
-    case "edit-form": {
-      const rec = state.editingId
-        ? getRecords().find((r) => r.id === state.editingId)
-        : null;
-      content = rec ? (
-        <RecordForm record={rec} isEdit />
-      ) : (
-        <EditListPage />
-      );
+    case "edit-form":
+      content = <EditFormLoader editingId={state.editingId} />;
       break;
-    }
 
     case "designer":
       content = <DesignerPage />;
@@ -93,6 +87,39 @@ function AppRouter() {
       <Toast />
     </div>
   );
+}
+
+// ── Async loader for the edit-form route ─────────────────────────────────────
+
+function EditFormLoader({ editingId }: { editingId: string | null }) {
+  const { go } = useApp();
+  const [record, setRecord] = useState<LabRecord | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!editingId) {
+      go("edit-list");
+      return;
+    }
+    fetchRecordById(editingId)
+      .then((r) => {
+        if (!r) go("edit-list");
+        else setRecord(r);
+      })
+      .finally(() => setLoading(false));
+  }, [editingId, go]);
+
+  if (loading) {
+    return (
+      <main className="page">
+        <div className="hero">
+          <p>Loading record…</p>
+        </div>
+      </main>
+    );
+  }
+
+  return record ? <RecordForm record={record} isEdit /> : <EditListPage />;
 }
 
 export default function AppShell() {
