@@ -39,24 +39,19 @@ export default function DesignerPage() {
       (!state.designerProject || r.projectName === state.designerProject)
   );
 
-  const avgCod = visible.length
-    ? Math.round(visible.reduce((s, r) => s + Number(r.cod || 0), 0) / visible.length)
-    : 0;
-  const avgBod = visible.length
-    ? Math.round(visible.reduce((s, r) => s + Number(r.bod || 0), 0) / visible.length)
-    : 0;
-
   return (
     <main className="page">
       <div className="hero">
+        <div className="hero-text">
+          <h1>Designer Dashboard</h1>
+          <p>
+            Search and compare historical laboratory records. This module provides
+            view-only access to laboratory records.
+          </p>
+        </div>
         <button id="designer-back-btn" className="btn btn-ghost" onClick={() => go("main")}>
           ← Back
         </button>
-        <h1>Designer Dashboard</h1>
-        <p>
-          Search and compare historical laboratory results. This module provides
-          view-only access to laboratory records.
-        </p>
       </div>
 
       {/* ── Stats Row ── */}
@@ -68,14 +63,6 @@ export default function DesignerPage() {
         <div className="card stat-card">
           <div className="value">{loading ? "—" : projects.length}</div>
           <div className="label">Available Projects</div>
-        </div>
-        <div className="card stat-card">
-          <div className="value">{loading ? "—" : avgCod}</div>
-          <div className="label">Average COD</div>
-        </div>
-        <div className="card stat-card">
-          <div className="value">{loading ? "—" : avgBod}</div>
-          <div className="label">Average BOD</div>
         </div>
       </div>
 

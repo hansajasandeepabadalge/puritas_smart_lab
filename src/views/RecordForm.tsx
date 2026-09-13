@@ -92,18 +92,20 @@ export default function RecordForm({ record = null, isEdit = false, onSaved }: P
   return (
     <main className="page">
       <div className="hero">
+        <div className="hero-text">
+          <h1>{isEdit ? "Edit Laboratory Data" : "Insert New Data"}</h1>
+          <p>
+            {isEdit
+              ? "Update the selected laboratory record."
+              : "Enter laboratory reference information and wastewater test results."}
+          </p>
+        </div>
         <button
           className="btn btn-ghost"
           onClick={() => go(isEdit ? "edit-list" : "lab-home")}
         >
           ← Back
         </button>
-        <h1>{isEdit ? "Edit Laboratory Data" : "Insert New Data"}</h1>
-        <p>
-          {isEdit
-            ? "Update the selected laboratory record."
-            : "Enter laboratory reference information and wastewater test results."}
-        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -225,12 +227,12 @@ export default function RecordForm({ record = null, isEdit = false, onSaved }: P
 
           <div className="button-row">
             <button
-              id="form-submit-btn"
-              className="btn btn-primary"
-              type="submit"
-              disabled={saving}
+              id="form-cancel-btn"
+              className="btn btn-ghost"
+              type="button"
+              onClick={() => go(isEdit ? "edit-list" : "lab-home")}
             >
-              {saving ? "Saving…" : isEdit ? "Update Data" : "Save Data"}
+              Cancel
             </button>
             {!isEdit && (
               <button
@@ -242,12 +244,12 @@ export default function RecordForm({ record = null, isEdit = false, onSaved }: P
               </button>
             )}
             <button
-              id="form-cancel-btn"
-              className="btn btn-ghost"
-              type="button"
-              onClick={() => go(isEdit ? "edit-list" : "lab-home")}
+              id="form-submit-btn"
+              className="btn btn-primary"
+              type="submit"
+              disabled={saving}
             >
-              Cancel
+              {saving ? "Saving…" : isEdit ? "Update Data" : "Save Data"}
             </button>
           </div>
         </section>
