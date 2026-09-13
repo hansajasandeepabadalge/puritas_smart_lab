@@ -8,11 +8,13 @@ export default function LabHomePage() {
   return (
     <main className="page">
       <div className="hero">
+        <div className="hero-text">
+          <h1>Lab User</h1>
+          <p>Manage laboratory test records and maintain accurate project data.</p>
+        </div>
         <button id="lab-back-btn" className="btn btn-ghost" onClick={() => go("main")}>
           ← Back
         </button>
-        <h1>Lab User</h1>
-        <p>Manage laboratory test records and maintain accurate project data.</p>
       </div>
 
       <div className="module-grid">

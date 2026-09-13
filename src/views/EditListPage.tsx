@@ -56,11 +56,13 @@ export default function EditListPage() {
   return (
     <main className="page">
       <div className="hero">
+        <div className="hero-text">
+          <h1>Edit Existing Data</h1>
+          <p>Search laboratory records and open a record to modify its values.</p>
+        </div>
         <button id="edit-list-back-btn" className="btn btn-ghost" onClick={() => go("lab-home")}>
           ← Back
         </button>
-        <h1>Edit Existing Data</h1>
-        <p>Search laboratory records and open a record to modify its values.</p>
       </div>
 
       {/* ── Filters ── */}
@@ -113,14 +115,14 @@ export default function EditListPage() {
           </div>
         </div>
         <div className="button-row">
-          <button id="edit-search-btn" className="btn btn-primary" onClick={applyFilters}>
-            Search
+          <button id="edit-new-btn" className="btn btn-ghost" onClick={() => go("insert")}>
+            + New Record
           </button>
           <button id="edit-clear-btn" className="btn btn-secondary" onClick={resetFilters}>
             Clear Filters
           </button>
-          <button id="edit-new-btn" className="btn btn-ghost" onClick={() => go("insert")}>
-            + New Record
+          <button id="edit-search-btn" className="btn btn-primary" onClick={applyFilters}>
+            Search
           </button>
         </div>
       </section>

@@ -9,12 +9,14 @@ export default function MainPage() {
   return (
     <main className="page">
       <div className="hero">
-        <span className="badge">Laboratory Data Management</span>
-        <h1>Select your module</h1>
-        <p>
-          Choose the workspace relevant to your role. Lab Users can enter and
-          update test data. Designers can search and compare historical records.
-        </p>
+        <div className="hero-text">
+          <span className="badge">Laboratory Data Management</span>
+          <h1>Select your module</h1>
+          <p>
+            Choose the workspace relevant to your role. Lab Users can enter and
+            update test data. Designers can search and compare historical records.
+          </p>
+        </div>
       </div>
 
       <div className="module-grid">
