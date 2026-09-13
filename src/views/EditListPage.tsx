@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { EFFLUENT_TYPES } from "@/config/constants";
-import { getRecords } from "@/services/storageService";
+import { fetchRecords } from "@/services/dbService";
 import RecordsTable from "@/components/RecordsTable";
 import { LabRecord } from "@/utils/types";
 
@@ -14,16 +14,23 @@ export default function EditListPage() {
   const [localEffluent, setLocalEffluent] = useState(state.filters.effluentType ?? "");
   const [localDate, setLocalDate] = useState(state.filters.date ?? "");
 
-  const allRecords = getRecords();
+  const [records, setRecords] = useState<LabRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const f = state.filters;
-  const records = allRecords.filter(
-    (r: LabRecord) =>
-      (!f.refNo || r.refNo.toLowerCase().includes(f.refNo.toLowerCase())) &&
-      (!f.projectName ||
-        r.projectName.toLowerCase().includes(f.projectName.toLowerCase())) &&
-      (!f.effluentType || r.effluentType === f.effluentType) &&
-      (!f.date || r.date === f.date)
-  );
+
+  useEffect(() => {
+    setLoading(true);
+    fetchRecords({
+      refNo: f.refNo,
+      projectName: f.projectName,
+      effluentType: f.effluentType,
+      date: f.date,
+    })
+      .then(setRecords)
+      .catch(() => setRecords([]))
+      .finally(() => setLoading(false));
+  }, [f.refNo, f.projectName, f.effluentType, f.date]);
 
   function applyFilters() {
     setFilters({
@@ -122,9 +129,13 @@ export default function EditListPage() {
       <section className="card section-card">
         <div className="section-title">
           <h2>Matching Records</h2>
-          <span>{records.length} record(s)</span>
+          <span>{loading ? "Loading…" : `${records.length} record(s)`}</span>
         </div>
-        <RecordsTable records={records} editable onEdit={handleEdit} />
+        {loading ? (
+          <div className="empty-state">Loading records…</div>
+        ) : (
+          <RecordsTable records={records} editable onEdit={handleEdit} />
+        )}
       </section>
     </main>
   );

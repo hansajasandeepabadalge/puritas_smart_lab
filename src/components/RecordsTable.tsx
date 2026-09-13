@@ -1,7 +1,7 @@
 "use client";
 
 import { LabRecord } from "@/utils/types";
-import { formatNumber } from "@/services/storageService";
+import { formatNumber } from "@/services/dbService";
 
 interface Props {
   records: LabRecord[];
