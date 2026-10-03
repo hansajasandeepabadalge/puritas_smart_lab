@@ -18,6 +18,55 @@
 .design-unit legend { font-weight: 700; padding: 0 6px; }
 .design-unit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .design-error { color: var(--danger); }
+.searchable-dropdown { position: relative; }
+.searchable-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.searchable-dropdown-trigger > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.searchable-dropdown-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.searchable-dropdown-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.searchable-dropdown-trigger[aria-invalid="true"] { border-color: var(--danger); }
+.searchable-dropdown-placeholder { color: var(--muted); }
+.searchable-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 5px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.searchable-dropdown-options { max-height: 230px; overflow-y: auto; margin-top: 6px; }
+.searchable-dropdown-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.searchable-dropdown-option[data-active="true"],
+.searchable-dropdown-option[aria-selected="true"] { background: var(--primary-soft); color: var(--primary-dark); }
+.searchable-dropdown-empty { margin: 12px 8px; color: var(--muted); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 @media (max-width: 760px) {
