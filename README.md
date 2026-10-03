@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Design form database setup
+
+Apply `supabase/migrations/202610030001_create_designs.sql` in your Supabase project's SQL editor before using **Designer → Add Design → Submit**. This creates the `designs` table with row-level security: authenticated users can submit and read their own designs.
+
+Each submission saves the selected project name, historical Ref No (Design Value), treatment type, and an ordered array of unit operations with retention times and comments. Project and reference options come from `lab_records`. Retention time is free text; special comments are optional.
+
+Run the design storage checks with `node --test tests/design-service.test.mjs`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -10,6 +10,8 @@ import LabHomePage from "@/views/LabHomePage";
 import RecordForm from "@/views/RecordForm";
 import EditListPage from "@/views/EditListPage";
 import DesignerPage from "@/views/DesignerPage";
+import DesignerHomePage from "@/views/DesignerHomePage";
+import DesignForm from "@/views/DesignForm";
 import { fetchRecordById } from "@/services/dbService";
 import { LabRecord } from "@/utils/types";
 
@@ -70,6 +72,14 @@ function AppRouter() {
 
     case "edit-form":
       content = <EditFormLoader editingId={state.editingId} />;
+      break;
+
+    case "designer-home":
+      content = <DesignerHomePage />;
+      break;
+
+    case "add-design":
+      content = <DesignForm />;
       break;
 
     case "designer":

@@ -16,7 +16,6 @@ export default function DesignerPage() {
 
   // Fetch all records once; filtering is done client-side for instant responsiveness
   useEffect(() => {
-    setLoading(true);
     fetchRecords()
       .then(setAllRecords)
       .catch(() => setAllRecords([]))
@@ -43,13 +42,13 @@ export default function DesignerPage() {
     <main className="page">
       <div className="hero">
         <div className="hero-text">
-          <h1>Designer Dashboard</h1>
+          <h1>Preview Data</h1>
           <p>
             Search and compare historical laboratory records. This module provides
             view-only access to laboratory records.
           </p>
         </div>
-        <button id="designer-back-btn" className="btn btn-ghost" onClick={() => go("main")}>
+        <button id="designer-back-btn" className="btn btn-ghost" onClick={() => go("designer-home")}>
           ← Back
         </button>
       </div>

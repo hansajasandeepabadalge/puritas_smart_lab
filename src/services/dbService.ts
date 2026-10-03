@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { LabRecord } from "@/utils/types";
+import { DesignInput, LabRecord } from "@/utils/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -145,6 +145,45 @@ export async function generateRefNo(): Promise<string> {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+export async function fetchDesignOptions(): Promise<{
+  projects: string[];
+  references: string[];
+}> {
+  const projects = new Set<string>();
+  const references = new Set<string>();
+  const pageSize = 500;
+
+  // Supabase limits rows per response; page through every historical record.
+  for (let start = 0; ; start += pageSize) {
+    const { data, error } = await supabase
+      .from("lab_records")
+      .select("project_name, ref_no")
+      .order("id", { ascending: true })
+      .range(start, start + pageSize - 1);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      if (row.project_name) projects.add(row.project_name);
+      if (row.ref_no) references.add(row.ref_no);
+    }
+    if (!data || data.length < pageSize) break;
+  }
+
+  return {
+    projects: [...projects].sort((a, b) => a.localeCompare(b)),
+    references: [...references].sort((a, b) => a.localeCompare(b)),
+  };
+}
+
+export async function insertDesign(payload: DesignInput): Promise<void> {
+  const { error } = await supabase.from("designs").insert({
+    project_name: payload.projectName,
+    design_value: payload.designValue,
+    treatment_type: payload.treatmentType,
+    unit_operations: payload.unitOperations,
+  });
+  if (error) throw error;
+}
 
 export function formatNumber(v: unknown): string {
   const n = Number(v);

@@ -11,7 +11,20 @@ export type Route =
   | "insert"
   | "edit-list"
   | "edit-form"
+  | "designer-home"
+  | "add-design"
   | "designer";
+
+export interface DesignInput {
+  projectName: string;
+  designValue: string;
+  treatmentType: "Biological" | "Chemical" | "Both";
+  unitOperations: {
+    operation: string;
+    retentionTime: string;
+    specialComment: string;
+  }[];
+}
 
 export interface Session {
   username: string;
