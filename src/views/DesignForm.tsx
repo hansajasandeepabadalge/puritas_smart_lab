@@ -112,7 +112,7 @@ export default function DesignForm() {
             <div className="form-grid">
               <SearchableDropdown id="design-project" label="Project Name" options={options.projects} />
               <SearchableDropdown id="design-value" label="Design Value" options={options.references}
-                placeholder="Search or select a Ref No" />
+                placeholder="Select a Ref No" />
               <div className="form-group">
                 <label htmlFor="treatment-type" className="required">Treatment Type</label>
                 <select id="treatment-type" name="treatment-type" required defaultValue="">
