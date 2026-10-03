@@ -60,7 +60,7 @@ export default function MainPage() {
           <button
             id="open-designer-btn"
             className="btn btn-primary"
-            onClick={() => go("designer")}
+            onClick={() => go("designer-home")}
           >
             Open Designer
           </button>
