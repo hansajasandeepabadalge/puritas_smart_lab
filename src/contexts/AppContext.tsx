@@ -24,9 +24,6 @@ interface AppContextValue {
   logout: () => Promise<void>;
   showToast: (message: string, error?: boolean) => void;
   setFilters: (filters: AppState["filters"]) => void;
-  setDesignerEffluent: (val: string) => void;
-  setDesignerProject: (val: string) => void;
-  resetDesignerFilters: () => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -40,8 +37,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     route: "login",
     editingId: null,
     filters: {},
-    designerEffluent: "",
-    designerProject: "",
   });
 
   const [session, setSessionState] = useState<Session | null>(null);
@@ -76,8 +71,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           route: "login",
           editingId: null,
           filters: {},
-          designerEffluent: "",
-          designerProject: "",
         });
       }
     });
@@ -145,18 +138,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, filters }));
   }, []);
 
-  const setDesignerEffluent = useCallback((val: string) => {
-    setState((prev) => ({ ...prev, designerEffluent: val, designerProject: "" }));
-  }, []);
-
-  const setDesignerProject = useCallback((val: string) => {
-    setState((prev) => ({ ...prev, designerProject: val }));
-  }, []);
-
-  const resetDesignerFilters = useCallback(() => {
-    setState((prev) => ({ ...prev, designerEffluent: "", designerProject: "" }));
-  }, []);
-
   return (
     <AppContext.Provider
       value={{
@@ -170,9 +151,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         logout,
         showToast,
         setFilters,
-        setDesignerEffluent,
-        setDesignerProject,
-        resetDesignerFilters,
       }}
     >
       {children}

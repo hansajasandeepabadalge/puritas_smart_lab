@@ -13,6 +13,7 @@ export type Route =
   | "edit-form"
   | "designer-home"
   | "add-design"
+  | "edit-design"
   | "designer";
 
 export interface DesignInput {
@@ -59,6 +60,4 @@ export interface AppState {
     effluentType: string;
     date: string;
   }>;
-  designerEffluent: string;
-  designerProject: string;
 }

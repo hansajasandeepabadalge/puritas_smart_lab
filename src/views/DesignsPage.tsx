@@ -6,7 +6,15 @@ import { deleteDesign, DesignRecord, fetchDesigns } from "@/services/dbService";
 import Pagination, { usePagination } from "@/components/Pagination";
 import { exportDesigns } from "@/utils/exportUtils";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, Csv02Icon, Delete02Icon, Xls02Icon } from "@hugeicons/core-free-icons";
+import {
+  Add01Icon,
+  Csv02Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+  Xls02Icon,
+} from "@hugeicons/core-free-icons";
 
 export default function DesignsPage() {
   const { go, showToast } = useApp();
@@ -176,19 +184,32 @@ export default function DesignsPage() {
                     <td>
                       <div className="hero-actions">
                         <button
-                          className="btn btn-ghost"
+                          className="btn btn-ghost btn-icon"
                           onClick={() => setExpanded(expanded === d.id ? null : d.id)}
+                          aria-label={expanded === d.id ? "Hide unit operations" : "View unit operations"}
+                          title={expanded === d.id ? "Hide" : "View"}
                         >
-                          {expanded === d.id ? "Hide" : "View"}
+                          <HugeiconsIcon
+                            icon={expanded === d.id ? ViewOffSlashIcon : ViewIcon}
+                            size={18}
+                          />
                         </button>
                         <button
-                          className="btn btn-danger"
+                          className="btn btn-secondary btn-icon"
+                          onClick={() => go("edit-design", { editingId: d.id })}
+                          aria-label={`Edit design for ${d.projectName}`}
+                          title="Edit"
+                        >
+                          <HugeiconsIcon icon={PencilEdit01Icon} size={18} />
+                        </button>
+                        <button
+                          className="btn btn-danger btn-icon"
                           disabled={deletingId === d.id}
                           onClick={() => handleDelete(d)}
                           aria-label={`Delete design for ${d.projectName}`}
+                          title="Delete"
                         >
-                          <HugeiconsIcon icon={Delete02Icon} size={16} />{" "}
-                          {deletingId === d.id ? "Deleting…" : "Delete"}
+                          <HugeiconsIcon icon={Delete02Icon} size={18} />
                         </button>
                       </div>
                     </td>

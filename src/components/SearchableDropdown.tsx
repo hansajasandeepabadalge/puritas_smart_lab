@@ -10,10 +10,17 @@ interface Props {
   label: string;
   options: readonly string[];
   placeholder?: string;
+  defaultValue?: string;
 }
 
-export default function SearchableDropdown({ id, label, options, placeholder }: Props) {
-  const [selected, setSelected] = useState("");
+export default function SearchableDropdown({
+  id,
+  label,
+  options,
+  placeholder,
+  defaultValue = "",
+}: Props) {
+  const [selected, setSelected] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);

@@ -190,6 +190,36 @@ export async function insertDesign(payload: DesignInput): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateDesign(id: string, payload: DesignInput): Promise<void> {
+  const { error } = await supabase
+    .from("designs")
+    .update({
+      project_name: payload.projectName,
+      design_value: payload.designValue,
+      treatment_type: payload.treatmentType,
+      unit_operations: payload.unitOperations,
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function fetchDesignById(id: string): Promise<DesignRecord | null> {
+  const { data, error } = await supabase
+    .from("designs")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: String(data.id),
+    projectName: data.project_name ?? "",
+    designValue: data.design_value ?? "",
+    treatmentType: data.treatment_type,
+    unitOperations: Array.isArray(data.unit_operations) ? data.unit_operations : [],
+    createdAt: data.created_at ?? "",
+  };
+}
+
 export async function deleteDesign(id: string): Promise<void> {
   const { error } = await supabase.from("designs").delete().eq("id", id);
   if (error) throw error;

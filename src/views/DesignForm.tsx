@@ -6,10 +6,20 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import { TREATMENT_TYPES, UNIT_OPERATIONS } from "@/config/constants";
 import { useApp } from "@/contexts/AppContext";
-import { fetchDesignOptions, insertDesign } from "@/services/dbService";
+import {
+  DesignRecord,
+  fetchDesignOptions,
+  insertDesign,
+  updateDesign,
+} from "@/services/dbService";
 import { DesignInput } from "@/utils/types";
 
-export default function DesignForm() {
+interface Props {
+  design?: DesignRecord | null;
+  isEdit?: boolean;
+}
+
+export default function DesignForm({ design = null, isEdit = false }: Props) {
   const { go, showToast } = useApp();
   const [options, setOptions] = useState<{ projects: string[]; references: string[] }>({
     projects: [], references: [],
@@ -19,18 +29,34 @@ export default function DesignForm() {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [rows, setRows] = useState([0]);
-  const nextRowId = useRef(1);
+  const initialRowIds =
+    design && design.unitOperations.length
+      ? design.unitOperations.map((_, idx) => idx)
+      : [0];
+  const [rows, setRows] = useState(initialRowIds);
+  const nextRowId = useRef(initialRowIds.length);
   const submitting = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     fetchDesignOptions()
-      .then((result) => { if (!cancelled) setOptions(result); })
+      .then((result) => {
+        if (!cancelled) {
+          const projects =
+            design?.projectName && !result.projects.includes(design.projectName)
+              ? [design.projectName, ...result.projects]
+              : result.projects;
+          const references =
+            design?.designValue && !result.references.includes(design.designValue)
+              ? [design.designValue, ...result.references]
+              : result.references;
+          setOptions({ projects, references });
+        }
+      })
       .catch(() => { if (!cancelled) setLoadError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [loadAttempt]);
+  }, [loadAttempt, design?.projectName, design?.designValue]);
 
   const noRecords = !loading && !loadError &&
     (!options.projects.length || !options.references.length);
@@ -63,12 +89,19 @@ export default function DesignForm() {
     setSaving(true);
     setSaveError("");
     try {
-      await insertDesign({
-        projectName, designValue,
+      const payload = {
+        projectName,
+        designValue,
         treatmentType: treatmentType as DesignInput["treatmentType"],
         unitOperations,
-      });
-      showToast("Design submitted successfully.");
+      };
+      if (isEdit && design) {
+        await updateDesign(design.id, payload);
+        showToast("Design updated successfully.");
+      } else {
+        await insertDesign(payload);
+        showToast("Design submitted successfully.");
+      }
       go("designer-home");
     } catch {
       setSaveError("Unable to save the design. Please try again. Your form entries have been kept.");
@@ -82,8 +115,12 @@ export default function DesignForm() {
     <main className="page">
       <div className="hero">
         <div className="hero-text">
-          <h1>Add Design</h1>
-          <p>Select historical laboratory data and add the unit operations for your treatment design.</p>
+          <h1>{isEdit ? "Edit Design" : "Add Design"}</h1>
+          <p>
+            {isEdit
+              ? "Update the selected treatment design and its unit operations."
+              : "Select historical laboratory data and add the unit operations for your treatment design."}
+          </p>
         </div>
       </div>
 
@@ -109,12 +146,27 @@ export default function DesignForm() {
               <span>Required fields are marked *</span>
             </div>
             <div className="form-grid">
-              <SearchableDropdown id="design-project" label="Project Name" options={options.projects} />
-              <SearchableDropdown id="design-value" label="Design Value" options={options.references}
-                placeholder="Select a Ref No" />
+              <SearchableDropdown
+                id="design-project"
+                label="Project Name"
+                options={options.projects}
+                defaultValue={design?.projectName ?? ""}
+              />
+              <SearchableDropdown
+                id="design-value"
+                label="Design Value"
+                options={options.references}
+                placeholder="Select a Ref No"
+                defaultValue={design?.designValue ?? ""}
+              />
               <div className="form-group">
                 <label htmlFor="treatment-type" className="required">Treatment Type</label>
-                <select id="treatment-type" name="treatment-type" required defaultValue="">
+                <select
+                  id="treatment-type"
+                  name="treatment-type"
+                  required
+                  defaultValue={design?.treatmentType ?? ""}
+                >
                   <option value="">Select treatment type</option>
                   {TREATMENT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
@@ -136,21 +188,37 @@ export default function DesignForm() {
             <div aria-live="polite" className="sr-only">{rows.length} unit operation rows</div>
             {rows.map((id, index) => {
               const number = String(index + 1).padStart(2, "0");
+              const initialUnit = design?.unitOperations[id];
               return (
                 <fieldset key={id} className="design-unit">
                   <legend>Unit Operation {number}</legend>
                   <div className="design-unit-grid">
-                    <SearchableDropdown id={`operation-${id}`} label={`Unit Operation ${number}`}
-                      options={UNIT_OPERATIONS} />
+                    <SearchableDropdown
+                      id={`operation-${id}`}
+                      label={`Unit Operation ${number}`}
+                      options={UNIT_OPERATIONS}
+                      defaultValue={initialUnit?.operation ?? ""}
+                    />
                     <div className="form-group">
                       <label htmlFor={`retention-${id}`} className="required">Retention Time</label>
-                      <input id={`retention-${id}`} name={`retention-${id}`} type="text" required
-                        placeholder="e.g. 2 hours" />
+                      <input
+                        id={`retention-${id}`}
+                        name={`retention-${id}`}
+                        type="text"
+                        required
+                        defaultValue={initialUnit?.retentionTime ?? ""}
+                        placeholder="e.g. 2 hours"
+                      />
                     </div>
                     <div className="form-group">
                       <label htmlFor={`comment-${id}`}>Special Comment</label>
-                      <input id={`comment-${id}`} name={`comment-${id}`} type="text"
-                        placeholder="Optional comment" />
+                      <input
+                        id={`comment-${id}`}
+                        name={`comment-${id}`}
+                        type="text"
+                        defaultValue={initialUnit?.specialComment ?? ""}
+                        placeholder="Optional comment"
+                      />
                     </div>
                   </div>
                   {rows.length > 1 && (
@@ -168,7 +236,7 @@ export default function DesignForm() {
             <div className="button-row">
               <button className="btn btn-ghost" type="button" onClick={() => go("designer-home")}>Cancel</button>
               <button id="design-submit-btn" className="btn btn-primary" type="submit">
-                {saving ? "Submitting…" : "Submit"}
+                {saving ? "Saving…" : isEdit ? "Update Design" : "Submit"}
               </button>
             </div>
           </section>

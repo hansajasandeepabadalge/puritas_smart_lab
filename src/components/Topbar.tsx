@@ -15,6 +15,7 @@ const TITLES: Record<Route, [string, string]> = {
   "edit-form": ["Edit Record", "Laboratory"],
   "designer-home": ["Designs", "Designer"],
   "add-design": ["Add Design", "Designer"],
+  "edit-design": ["Edit Design", "Designer"],
   designer: ["Designs", "Designer"],
 };
 
@@ -58,10 +59,6 @@ export default function Topbar({ onMenu }: { onMenu: () => void }) {
           </div>
           <div className={styles.title}>{title}</div>
         </div>
-      </div>
-      <div className={styles.currentUser}>
-        <span className={styles.roleBadge}>{session.role}</span>
-        <strong>{session.username}</strong>
       </div>
     </header>
   );

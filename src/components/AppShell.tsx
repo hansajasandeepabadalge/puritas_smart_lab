@@ -11,7 +11,7 @@ import RecordForm from "@/views/RecordForm";
 import EditListPage from "@/views/EditListPage";
 import DesignsPage from "@/views/DesignsPage";
 import DesignForm from "@/views/DesignForm";
-import { fetchRecordById } from "@/services/dbService";
+import { DesignRecord, fetchDesignById, fetchRecordById } from "@/services/dbService";
 import { LabRecord } from "@/utils/types";
 
 function AppRouter() {
@@ -71,6 +71,10 @@ function AppRouter() {
 
     case "add-design":
       content = <DesignForm />;
+      break;
+
+    case "edit-design":
+      content = <EditDesignLoader editingId={state.editingId} />;
       break;
 
     case "designer":
@@ -137,6 +141,37 @@ function EditFormLoader({ editingId }: { editingId: string | null }) {
   }
 
   return record ? <RecordForm record={record} isEdit /> : <EditListPage />;
+}
+
+function EditDesignLoader({ editingId }: { editingId: string | null }) {
+  const { go } = useApp();
+  const [design, setDesign] = useState<DesignRecord | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!editingId) {
+      go("designer-home");
+      return;
+    }
+    fetchDesignById(editingId)
+      .then((d) => {
+        if (!d) go("designer-home");
+        else setDesign(d);
+      })
+      .finally(() => setLoading(false));
+  }, [editingId, go]);
+
+  if (loading) {
+    return (
+      <main className="page">
+        <div className="hero">
+          <p>Loading design…</p>
+        </div>
+      </main>
+    );
+  }
+
+  return design ? <DesignForm design={design} isEdit /> : <DesignsPage />;
 }
 
 export default function AppShell() {

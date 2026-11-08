@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useApp } from "@/contexts/AppContext";
 import { Route } from "@/utils/types";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -47,7 +46,7 @@ const SECTIONS: NavSection[] = [
         label: "Designer",
         icon: <HugeiconsIcon icon={RulerIcon} size={20} />,
         route: "designer-home",
-        match: ["add-design", "designer"],
+        match: ["add-design", "edit-design", "designer"],
       },
     ],
   },
@@ -67,6 +66,12 @@ export default function Sidebar({
   const { session, state, go, logout } = useApp();
   if (!session) return null;
   const canLab = session.role === "lab" || session.role === "admin";
+  const initials = (session.display || session.username)
+    .trim()
+    .split(/\s+/)
+    .map((part) => part.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join("");
 
   return (
     <>
@@ -77,14 +82,6 @@ export default function Sidebar({
       />
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-brand">
-          <Image
-            src="/puritas-logo.jpg"
-            alt="Puritas logo"
-            width={120}
-            height={40}
-            className="sidebar-logo"
-            priority
-          />
           <span className="sidebar-brand-text">Smart Lab</span>
           <button
             className="sidebar-collapse-btn"
@@ -135,23 +132,23 @@ export default function Sidebar({
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
-            <div className="avatar">
-              {session.username.charAt(0).toUpperCase()}
+            <div className="avatar" title={session.display || session.username}>
+              {initials}
             </div>
             <div className="sidebar-user-info">
-              <strong>{session.username}</strong>
-              <span>{session.display}</span>
+              <strong>{session.display || session.username}</strong>
+              <span>{session.role}</span>
             </div>
+            <button
+              id="nav-logout-btn"
+              className="sidebar-logout-icon"
+              onClick={logout}
+              aria-label="Logout"
+              title="Logout"
+            >
+              <HugeiconsIcon icon={Logout01Icon} size={18} />
+            </button>
           </div>
-          <button
-            id="nav-logout-btn"
-            className="btn btn-ghost sidebar-logout"
-            onClick={logout}
-            title="Logout"
-          >
-            <HugeiconsIcon icon={Logout01Icon} size={18} />{" "}
-            <span className="sidebar-label">Logout</span>
-          </button>
         </div>
       </aside>
     </>

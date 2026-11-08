@@ -11,7 +11,6 @@ import {
   Calendar03Icon,
   FolderOpenIcon,
   Layers01Icon,
-  PencilEdit01Icon,
   RulerIcon,
   Task01Icon,
 } from "@hugeicons/core-free-icons";
@@ -111,23 +110,10 @@ export default function MainPage() {
       lab: true,
     },
     {
-      icon: <HugeiconsIcon icon={PencilEdit01Icon} size={22} />,
-      title: "Edit Records",
-      desc: "Search and update saved records.",
-      onClick: () => go("edit-list"),
-      lab: true,
-    },
-    {
       icon: <HugeiconsIcon icon={RulerIcon} size={22} />,
       title: "Add Design",
       desc: "Build a treatment design.",
       onClick: () => go("add-design"),
-    },
-    {
-      icon: <HugeiconsIcon icon={Layers01Icon} size={22} />,
-      title: "View Designs",
-      desc: "Browse saved treatment designs.",
-      onClick: () => go("designer-home"),
     },
   ];
 
@@ -204,7 +190,7 @@ export default function MainPage() {
       </div>
 
       {/* ── Water Quality Parameter Benchmarks ── */}
-      <div className="card section-card">
+      {/* <div className="card section-card">
         <div className="section-title" style={{ flexWrap: "wrap" }}>
           <div>
             <h2>Water Quality Parameter Summary</h2>
@@ -265,7 +251,7 @@ export default function MainPage() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* ── Records & Effluent Distribution ── */}
       <div className="dashboard-grid">

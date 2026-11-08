@@ -70,21 +70,22 @@ export default function RecordsTable({
                 <td>
                   <div className="hero-actions">
                     <button
-                      className="btn btn-secondary"
+                      className="btn btn-secondary btn-icon"
                       onClick={() => onEdit?.(r.id)}
                       aria-label={`Edit record ${r.refNo}`}
+                      title="Edit"
                     >
-                      <HugeiconsIcon icon={PencilEdit01Icon} size={16} /> Edit
+                      <HugeiconsIcon icon={PencilEdit01Icon} size={18} />
                     </button>
                     {onDelete && (
                       <button
-                        className="btn btn-danger"
+                        className="btn btn-danger btn-icon"
                         disabled={deletingId === r.id}
                         onClick={() => onDelete(r)}
                         aria-label={`Delete record ${r.refNo}`}
+                        title="Delete"
                       >
-                        <HugeiconsIcon icon={Delete02Icon} size={16} />{" "}
-                        {deletingId === r.id ? "Deleting…" : "Delete"}
+                        <HugeiconsIcon icon={Delete02Icon} size={18} />
                       </button>
                     )}
                   </div>
