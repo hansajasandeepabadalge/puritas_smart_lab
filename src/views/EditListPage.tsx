@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { EFFLUENT_TYPES } from "@/config/constants";
-import { fetchRecords } from "@/services/dbService";
+import { deleteRecord, fetchRecords } from "@/services/dbService";
 import RecordsTable from "@/components/RecordsTable";
 import { LabRecord } from "@/utils/types";
+import { exportLabRecords } from "@/utils/exportUtils";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, Csv02Icon, Xls02Icon } from "@hugeicons/core-free-icons";
 
 export default function EditListPage() {
-  const { state, go, setFilters } = useApp();
+  const { state, go, setFilters, showToast } = useApp();
   const [localRef, setLocalRef] = useState(state.filters.refNo ?? "");
   const [localProject, setLocalProject] = useState(state.filters.projectName ?? "");
   const [localEffluent, setLocalEffluent] = useState(state.filters.effluentType ?? "");
@@ -16,6 +19,7 @@ export default function EditListPage() {
 
   const [records, setRecords] = useState<LabRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const f = state.filters;
 
@@ -53,15 +57,44 @@ export default function EditListPage() {
     go("edit-form", { editingId: id });
   }
 
+  async function handleDelete(record: LabRecord) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete laboratory record "${record.refNo}" (${record.projectName})?`
+      )
+    ) {
+      return;
+    }
+    setDeletingId(record.id);
+    try {
+      await deleteRecord(record.id);
+      setRecords((prev) => prev.filter((r) => r.id !== record.id));
+      showToast(`Record ${record.refNo} deleted.`);
+    } catch {
+      showToast("Failed to delete record. Please check permissions.", true);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function handleExport(format: "csv" | "excel") {
+    const activeFilters = [f.effluentType, f.projectName, f.refNo, f.date]
+      .filter(Boolean)
+      .join("-")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-");
+    exportLabRecords(records, format, activeFilters);
+  }
+
   return (
     <main className="page">
       <div className="hero">
         <div className="hero-text">
-          <h1>Edit Existing Data</h1>
-          <p>Search laboratory records and open a record to modify its values.</p>
+          <h1>Laboratory Records</h1>
+          <p>Search laboratory records, open a record to modify its values, or add a new one.</p>
         </div>
-        <button id="edit-list-back-btn" className="btn btn-ghost" onClick={() => go("lab-home")}>
-          ← Back
+        <button id="lab-insert-btn" className="btn btn-primary" onClick={() => go("insert")}>
+          <HugeiconsIcon icon={Add01Icon} size={18} /> Insert New Data
         </button>
       </div>
 
@@ -115,9 +148,6 @@ export default function EditListPage() {
           </div>
         </div>
         <div className="button-row">
-          <button id="edit-new-btn" className="btn btn-ghost" onClick={() => go("insert")}>
-            + New Record
-          </button>
           <button id="edit-clear-btn" className="btn btn-secondary" onClick={resetFilters}>
             Clear Filters
           </button>
@@ -129,14 +159,40 @@ export default function EditListPage() {
 
       {/* ── Results ── */}
       <section className="card section-card">
-        <div className="section-title">
-          <h2>Matching Records</h2>
-          <span>{loading ? "Loading…" : `${records.length} record(s)`}</span>
+        <div className="section-title" style={{ flexWrap: "wrap" }}>
+          <div>
+            <h2>Matching Records</h2>
+            <span>{loading ? "Loading…" : `${records.length} record(s)`}</span>
+          </div>
+          <div className="hero-actions">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={loading || !records.length}
+              onClick={() => handleExport("csv")}
+            >
+              <HugeiconsIcon icon={Csv02Icon} size={18} /> Export CSV
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={loading || !records.length}
+              onClick={() => handleExport("excel")}
+            >
+              <HugeiconsIcon icon={Xls02Icon} size={18} /> Export Excel
+            </button>
+          </div>
         </div>
         {loading ? (
           <div className="empty-state">Loading records…</div>
         ) : (
-          <RecordsTable records={records} editable onEdit={handleEdit} />
+          <RecordsTable
+            records={records}
+            editable
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            deletingId={deletingId}
+          />
         )}
       </section>
     </main>

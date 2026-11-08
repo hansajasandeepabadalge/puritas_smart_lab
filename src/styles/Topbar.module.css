@@ -7,72 +7,82 @@
   justify-content: space-between;
   gap: 24px;
   padding: 14px 32px;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.9);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
 
-.brand {
+.left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  color: var(--primary);
+  gap: 14px;
 }
 
-.brandLogo {
-  width: 128px;
-  height: 44px;
-  object-fit: contain;
-  object-position: left center;
-  display: block;
-}
-
-.navActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.navLink {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  padding: 9px 12px;
+.menuBtn {
+  display: none;
+  border: 1px solid var(--border);
+  background: #fff;
   border-radius: 10px;
-  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: var(--text);
 }
 
-.navLink:hover {
-  background: var(--primary-soft);
-  color: var(--primary);
+.crumb {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .currentUser {
-  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 14px;
-  padding: 8px 12px;
-  border-left: 1px solid var(--border);
+  color: var(--text);
 }
 
-@media (max-width: 900px) {
+.roleBadge {
+  text-transform: capitalize;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1000px) {
   .topbar {
     padding: 12px 18px;
   }
+  .menuBtn {
+    display: grid;
+    place-items: center;
+  }
 }
 
-@media (max-width: 640px) {
-  .brandLogo {
-    width: 105px;
-    height: 38px;
+@media (max-width: 520px) {
+  .currentUser strong {
+    display: none;
   }
-  .currentUser {
-    border-left: 0;
-    padding-left: 0;
-    width: 100%;
-  }
-  .topbar {
-    align-items: flex-start;
-  }
+}
+
+.crumbLink {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.crumbLink:hover {
+  text-decoration: underline;
 }

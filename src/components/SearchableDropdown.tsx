@@ -1,4 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+
 
 import { useEffect, useRef, useState } from "react";
 
@@ -74,7 +77,7 @@ export default function SearchableDropdown({ id, label, options, placeholder }: 
         <span className={value ? "" : "searchable-dropdown-placeholder"}>
           {value || placeholder || "Select an option"}
         </span>
-        <span aria-hidden="true">▾</span>
+        <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
       </button>
       {/* Preserve native required validation and the existing FormData field names. */}
       <select
@@ -146,7 +149,7 @@ export default function SearchableDropdown({ id, label, options, placeholder }: 
                 onClick={() => choose(option)}
               >
                 <span>{option}</span>
-                {value === option && <span aria-hidden="true">✓</span>}
+                {value === option && <HugeiconsIcon icon={Tick02Icon} size={16} />}
               </button>
             ))}
           </div>

@@ -100,12 +100,6 @@ export default function RecordForm({ record = null, isEdit = false, onSaved }: P
               : "Enter laboratory reference information and wastewater test results."}
           </p>
         </div>
-        <button
-          className="btn btn-ghost"
-          onClick={() => go(isEdit ? "edit-list" : "lab-home")}
-        >
-          ← Back
-        </button>
       </div>
 
       <form onSubmit={handleSubmit}>

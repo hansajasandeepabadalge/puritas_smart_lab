@@ -2,14 +2,27 @@
 
 import { LabRecord } from "@/utils/types";
 import { formatNumber } from "@/services/dbService";
+import Pagination, { usePagination } from "@/components/Pagination";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, PencilEdit01Icon } from "@hugeicons/core-free-icons";
 
 interface Props {
   records: LabRecord[];
   editable?: boolean;
   onEdit?: (id: string) => void;
+  onDelete?: (record: LabRecord) => void;
+  deletingId?: string | null;
 }
 
-export default function RecordsTable({ records, editable = false, onEdit }: Props) {
+export default function RecordsTable({
+  records,
+  editable = false,
+  onEdit,
+  onDelete,
+  deletingId,
+}: Props) {
+  const pager = usePagination(records);
+
   if (!records.length) {
     return (
       <div className="empty-state">
@@ -39,7 +52,7 @@ export default function RecordsTable({ records, editable = false, onEdit }: Prop
           </tr>
         </thead>
         <tbody>
-          {records.map((r) => (
+          {pager.slice.map((r) => (
             <tr key={r.id}>
               <td>{r.refNo}</td>
               <td>{r.date}</td>
@@ -55,19 +68,33 @@ export default function RecordsTable({ records, editable = false, onEdit }: Prop
               <td>{formatNumber(r.ogt)}</td>
               {editable && (
                 <td>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => onEdit?.(r.id)}
-                    aria-label={`Edit record ${r.refNo}`}
-                  >
-                    Edit
-                  </button>
+                  <div className="hero-actions">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => onEdit?.(r.id)}
+                      aria-label={`Edit record ${r.refNo}`}
+                    >
+                      <HugeiconsIcon icon={PencilEdit01Icon} size={16} /> Edit
+                    </button>
+                    {onDelete && (
+                      <button
+                        className="btn btn-danger"
+                        disabled={deletingId === r.id}
+                        onClick={() => onDelete(r)}
+                        aria-label={`Delete record ${r.refNo}`}
+                      >
+                        <HugeiconsIcon icon={Delete02Icon} size={16} />{" "}
+                        {deletingId === r.id ? "Deleting…" : "Delete"}
+                      </button>
+                    )}
+                  </div>
                 </td>
               )}
             </tr>
           ))}
         </tbody>
       </table>
+      <Pagination {...pager} />
     </div>
   );
 }

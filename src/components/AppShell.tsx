@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Topbar from "@/components/Topbar";
+import Sidebar from "@/components/Sidebar";
 import Toast from "@/components/Toast";
 import LoginPage from "@/views/LoginPage";
 import MainPage from "@/views/MainPage";
-import LabHomePage from "@/views/LabHomePage";
 import RecordForm from "@/views/RecordForm";
 import EditListPage from "@/views/EditListPage";
-import DesignerPage from "@/views/DesignerPage";
-import DesignerHomePage from "@/views/DesignerHomePage";
+import DesignsPage from "@/views/DesignsPage";
 import DesignForm from "@/views/DesignForm";
 import { fetchRecordById } from "@/services/dbService";
 import { LabRecord } from "@/utils/types";
@@ -24,11 +23,7 @@ function AppRouter() {
   }
   if (session && state.route === "login") {
     return (
-      <div className="app-shell">
-        <Topbar />
-        <MainPage />
-        <Toast />
-      </div>
+      <DashboardLayout><MainPage /></DashboardLayout>
     );
   }
 
@@ -42,11 +37,7 @@ function AppRouter() {
   const labRoutes = ["lab-home", "insert", "edit-list", "edit-form"];
   if (labRoutes.includes(state.route) && !isLabOrAdmin) {
     return (
-      <div className="app-shell">
-        <Topbar />
-        <MainPage />
-        <Toast />
-      </div>
+      <DashboardLayout><MainPage /></DashboardLayout>
     );
   }
 
@@ -59,7 +50,7 @@ function AppRouter() {
       break;
 
     case "lab-home":
-      content = <LabHomePage />;
+      content = <EditListPage />;
       break;
 
     case "insert":
@@ -75,7 +66,7 @@ function AppRouter() {
       break;
 
     case "designer-home":
-      content = <DesignerHomePage />;
+      content = <DesignsPage />;
       break;
 
     case "add-design":
@@ -83,7 +74,7 @@ function AppRouter() {
       break;
 
     case "designer":
-      content = <DesignerPage />;
+      content = <DesignsPage />;
       break;
 
     default:
@@ -91,15 +82,31 @@ function AppRouter() {
   }
 
   return (
-    <div className="app-shell">
-      <Topbar />
-      {content}
-      <Toast />
-    </div>
+    <DashboardLayout>{content}</DashboardLayout>
   );
 }
 
 // ── Async loader for the edit-form route ─────────────────────────────────────
+
+function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <div className={`app-shell ${collapsed ? "collapsed" : ""}`}>
+      <Sidebar
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((c) => !c)}
+      />
+      <div className="app-main">
+        <Topbar onMenu={() => setMenuOpen(true)} />
+        {children}
+      </div>
+      <Toast />
+    </div>
+  );
+}
 
 function EditFormLoader({ editingId }: { editingId: string | null }) {
   const { go } = useApp();

@@ -115,6 +115,11 @@ export async function updateRecord(
   if (error) throw error;
 }
 
+export async function deleteRecord(id: string): Promise<void> {
+  const { error } = await supabase.from("lab_records").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function refNoExists(
   refNo: string,
   excludeId?: string
@@ -183,6 +188,32 @@ export async function insertDesign(payload: DesignInput): Promise<void> {
     unit_operations: payload.unitOperations,
   });
   if (error) throw error;
+}
+
+export async function deleteDesign(id: string): Promise<void> {
+  const { error } = await supabase.from("designs").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export interface DesignRecord extends DesignInput {
+  id: string;
+  createdAt: string;
+}
+
+export async function fetchDesigns(): Promise<DesignRecord[]> {
+  const { data, error } = await supabase
+    .from("designs")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    projectName: row.project_name ?? "",
+    designValue: row.design_value ?? "",
+    treatmentType: row.treatment_type,
+    unitOperations: Array.isArray(row.unit_operations) ? row.unit_operations : [],
+    createdAt: row.created_at ?? "",
+  }));
 }
 
 export function formatNumber(v: unknown): string {

@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import SearchableDropdown from "@/components/SearchableDropdown";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon } from "@hugeicons/core-free-icons";
 import { TREATMENT_TYPES, UNIT_OPERATIONS } from "@/config/constants";
 import { useApp } from "@/contexts/AppContext";
 import { fetchDesignOptions, insertDesign } from "@/services/dbService";
@@ -83,9 +85,6 @@ export default function DesignForm() {
           <h1>Add Design</h1>
           <p>Select historical laboratory data and add the unit operations for your treatment design.</p>
         </div>
-        <button className="btn btn-ghost" disabled={saving} onClick={() => go("designer-home")}>
-          ← Back
-        </button>
       </div>
 
       {loading && <p role="status">Loading projects and reference numbers…</p>}
@@ -131,7 +130,7 @@ export default function DesignForm() {
                   const id = nextRowId.current++;
                   setRows((previous) => [...previous, id]);
                 }}>
-                <span aria-hidden="true">＋</span> Add Unit Operation
+                <HugeiconsIcon icon={Add01Icon} size={16} /> Add Unit Operation
               </button>
             </div>
             <div aria-live="polite" className="sr-only">{rows.length} unit operation rows</div>

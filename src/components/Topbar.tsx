@@ -1,44 +1,67 @@
 "use client";
 
-import Image from "next/image";
 import { useApp } from "@/contexts/AppContext";
+import { Route } from "@/utils/types";
 import styles from "@/styles/Topbar.module.css";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Menu01Icon } from "@hugeicons/core-free-icons";
 
-export default function Topbar() {
-  const { session, go, logout } = useApp();
+const TITLES: Record<Route, [string, string]> = {
+  login: ["Login", ""],
+  main: ["Dashboard", "Overview"],
+  "lab-home": ["Laboratory Records", "Laboratory"],
+  insert: ["Insert New Data", "Laboratory"],
+  "edit-list": ["Laboratory Records", "Laboratory"],
+  "edit-form": ["Edit Record", "Laboratory"],
+  "designer-home": ["Designs", "Designer"],
+  "add-design": ["Add Design", "Designer"],
+  designer: ["Designs", "Designer"],
+};
+
+export default function Topbar({ onMenu }: { onMenu: () => void }) {
+  const { session, state, go } = useApp();
   if (!session) return null;
+  const [title, crumb] = TITLES[state.route] ?? ["", ""];
 
   return (
     <header className={styles.topbar}>
-      <div className={styles.brand}>
-        <Image
-          src="/puritas-logo.jpg"
-          alt="Puritas logo"
-          width={128}
-          height={44}
-          className={styles.brandLogo}
-          priority
-        />
-        <span>Puritas Smart Lab</span>
-      </div>
-      <div className={styles.navActions}>
+      <div className={styles.left}>
         <button
-          id="nav-home-btn"
-          className={styles.navLink}
-          onClick={() => go("main")}
+          className={styles.menuBtn}
+          onClick={onMenu}
+          aria-label="Open menu"
         >
-          Home
+          <HugeiconsIcon icon={Menu01Icon} size={20} />
         </button>
-        <div className={styles.currentUser}>
-          Current User: <strong>{session.username}</strong> · {session.display}
+        <div>
+          <div className={styles.crumb}>
+            Puritas Smart Lab
+            {crumb && (
+              <>
+                {" / "}
+                <button
+                  className={styles.crumbLink}
+                  onClick={() =>
+                    go(
+                      crumb === "Laboratory"
+                        ? "lab-home"
+                        : crumb === "Designer"
+                          ? "designer-home"
+                          : "main"
+                    )
+                  }
+                >
+                  {crumb}
+                </button>
+              </>
+            )}
+          </div>
+          <div className={styles.title}>{title}</div>
         </div>
-        <button
-          id="nav-logout-btn"
-          className="btn btn-ghost"
-          onClick={logout}
-        >
-          Logout
-        </button>
+      </div>
+      <div className={styles.currentUser}>
+        <span className={styles.roleBadge}>{session.role}</span>
+        <strong>{session.username}</strong>
       </div>
     </header>
   );
